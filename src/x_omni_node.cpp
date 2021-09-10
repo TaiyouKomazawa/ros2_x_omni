@@ -6,7 +6,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/vector3.hpp"
 
 #include <SerialBridge.hpp>
 #include <LinuxHardwareSerial.hpp>
@@ -29,38 +28,41 @@ public:
     _serial->add_frame(0, &this->odom);
     _serial->add_frame(1, &this->cmd);
 
-    publisher_ = this->create_publisher<geometry_msgs::msg::Vector3>("odom_vel", 10);
-    subscription_ = this->create_subscription<geometry_msgs::msg::Vector3>(
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("odom_vel", 10);
+    subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&XOmniNode::topic_callback, this, _1));
 
     timer_ = this->create_wall_timer(
-      10ms, std::bind(&XOmniNode::timer_callback, this));
+      50ms, std::bind(&XOmniNode::timer_callback, this));
   }
 
 private:
   void timer_callback()
   {
-    auto msg = geometry_msgs::msg::Vector3();
+    auto msg = geometry_msgs::msg::Twist();
     _serial->update();
+
     if(_serial->read() == 0){
-      msg.x = this->odom.data.x;
-      msg.y = this->odom.data.y;
-      msg.z = this->odom.data.th;
+      RCLCPP_INFO(this->get_logger(), "read odom.");
+      msg.linear.x = this->odom.data.x;
+      msg.linear.y = this->odom.data.y;
+      msg.angular.z = this->odom.data.th;
       publisher_->publish(msg);
     }
+
     _serial->write(1);
   }
 
-  void topic_callback(const geometry_msgs::msg::Vector3::ConstSharedPtr msg)
+  void topic_callback(const geometry_msgs::msg::Twist::ConstSharedPtr msg)
   {
-    this->cmd.data.x = msg->x;
-    this->cmd.data.y = msg->y;
-    this->cmd.data.th = msg->z;
+    this->cmd.data.x = msg->linear.x;
+    this->cmd.data.y = msg->linear.y;
+    this->cmd.data.th = msg->angular.z;
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr publisher_;
-  rclcpp::Subscription<geometry_msgs::msg::Vector3>::SharedPtr subscription_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
 
   SerialBridge *_serial;
   SbVector3 odom, cmd;
