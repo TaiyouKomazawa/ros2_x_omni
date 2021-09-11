@@ -16,7 +16,7 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-SerialDev *dev = new LinuxHardwareSerial("/dev/ttyUSB0", B115200);
+SerialDev *dev = new LinuxHardwareSerial("/dev/ttyUSB0", B2000000);
 SerialBridge serial(dev);
 
 class XOmniNode : public rclcpp::Node
@@ -71,7 +71,7 @@ private:
     this->cmd.data.th = msg->angular.z;
   }
 
-  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr poller_timer_, sender_timer_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
 
