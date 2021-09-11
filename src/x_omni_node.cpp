@@ -35,8 +35,10 @@ public:
     subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&XOmniNode::topic_callback, this, _1));
 
-    timer_ = this->create_wall_timer(
-      50ms, std::bind(&XOmniNode::timer_callback, this));
+    poller_timer_ = this->create_wall_timer(
+        5ms, std::bind(&XOmniNode::polling_callback, this));
+    sender_timer_ = this->create_wall_timer(
+        50ms, std::bind(&XOmniNode::sending_callback, this));
   }
 
   void dev_reset()
@@ -48,7 +50,7 @@ public:
   }
 
 private:
-  void timer_callback()
+  void polling_callback()
   {
     auto msg = geometry_msgs::msg::Twist();
     _serial->update();
@@ -60,7 +62,10 @@ private:
       msg.angular.z = this->odom.data.th;
       publisher_->publish(msg);
     }
+  }
 
+  void sending_callback()
+  {
     _serial->write(1);
   }
 
