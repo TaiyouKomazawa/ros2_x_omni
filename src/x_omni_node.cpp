@@ -27,13 +27,24 @@ public:
   {
     _serial->add_frame(0, &this->odom);
     _serial->add_frame(1, &this->cmd);
+    _serial->add_frame(3, &this->rst);
 
-    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("odom_vel", 10);
+    this->dev_reset();
+
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("x_omni/odom_vel", 10);
     subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&XOmniNode::topic_callback, this, _1));
 
     timer_ = this->create_wall_timer(
       50ms, std::bind(&XOmniNode::timer_callback, this));
+  }
+
+  void dev_reset()
+  {
+    RCLCPP_INFO(this->get_logger(), "x omni reset.");
+    this->rst.data.c = 1;
+    _serial->write(3);
+    rclcpp::sleep_for(500ms);
   }
 
 private:
@@ -66,12 +77,15 @@ private:
 
   SerialBridge *_serial;
   SbVector3 odom, cmd;
+  Uint8Data rst;
 };
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<XOmniNode>(&serial));
+  auto node = std::make_shared<XOmniNode>(&serial);
+  rclcpp::spin(node);
+  node->dev_reset();
   rclcpp::shutdown();
   return 0;
 }
