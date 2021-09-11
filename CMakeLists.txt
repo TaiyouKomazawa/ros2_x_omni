@@ -17,8 +17,13 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(x_omni_node src/x_omni_node.cpp)
 ament_target_dependencies(x_omni_node rclcpp geometry_msgs)
@@ -32,6 +37,13 @@ target_include_directories(x_omni_node PUBLIC
 
 install(TARGETS x_omni_node
   DESTINATION lib/${PROJECT_NAME})
+
+ament_python_install_package(scripts)
+install(PROGRAMS
+  scripts/odom_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
