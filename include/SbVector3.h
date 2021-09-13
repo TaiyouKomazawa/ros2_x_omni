@@ -7,7 +7,7 @@ typedef struct Vector3Type
 {
     float x;
     float y;
-    float th;
+    float z;
 } vector3_t;
 
 typedef sb::Message<vector3_t> SbVector3;

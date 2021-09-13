@@ -59,7 +59,7 @@ private:
       RCLCPP_INFO(this->get_logger(), "read odom.");
       msg.linear.x = this->odom.data.x;
       msg.linear.y = this->odom.data.y;
-      msg.angular.z = this->odom.data.th;
+      msg.angular.z = this->odom.data.z;
       publisher_->publish(msg);
     }
   }
@@ -73,7 +73,7 @@ private:
   {
     this->cmd.data.x = msg->linear.x;
     this->cmd.data.y = msg->linear.y;
-    this->cmd.data.th = msg->angular.z;
+    this->cmd.data.z = msg->angular.z;
   }
 
   rclcpp::TimerBase::SharedPtr poller_timer_, sender_timer_;
