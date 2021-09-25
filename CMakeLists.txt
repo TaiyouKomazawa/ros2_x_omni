@@ -21,12 +21,20 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 
+find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(ros2_x_omni_msgs REQUIRED)
 
 add_executable(x_omni_node src/x_omni_node.cpp)
-ament_target_dependencies(x_omni_node rclcpp geometry_msgs)
+
+ament_target_dependencies(x_omni_node
+  rclcpp
+  geometry_msgs
+  ros2_x_omni_msgs
+)
 
 target_link_libraries(x_omni_node ${CMAKE_CURRENT_SOURCE_DIR}/SerialBridge/bin/libSerialBridge.a)
 
@@ -42,8 +50,13 @@ ament_python_install_package(scripts)
 install(PROGRAMS
   scripts/odom_node.py
   DESTINATION lib/${PROJECT_NAME}
+  RENAME x_odom_node
 )
 
+install(PROGRAMS
+  launch/x_omni.launch.py
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
