@@ -13,6 +13,8 @@ from sensor_msgs.msg import Imu, MagneticField
 
 from ros2_x_omni_msgs.msg import ImuAxis9
 
+from std_srvs.srv import Empty
+
 from tf2_ros import TransformBroadcaster
 
 class XOmniOdomNode(Node):
@@ -49,6 +51,16 @@ class XOmniOdomNode(Node):
             MagneticField,
             'x_omni/magnetic_field',
             5)
+
+        self.odom_rst_srv = self.create_service(
+            Empty,
+            'x_omni/odom_reset',
+            self.odom_reset_callback)
+
+        self.imu_cal_srv = self.create_service(
+            Empty,
+            'x_omni/imu_calibration',
+            self.imu_calibration_callback)
 
     def got_odom_callback(self, msg):
 
@@ -137,6 +149,15 @@ class XOmniOdomNode(Node):
             self.calibration_cnt = 0
             self.get_logger().info('IMU calibration done.')
 
+    def odom_reset_callback(self, request, response):
+        self.pose_th = 0.0
+        self.pose_x = 0.0
+        self.pose_y = 0.0
+        return response
+
+    def imu_calibration_callback(self, request, response):
+        self.imu_calibration(500)
+        return response
 
 
 

@@ -19,6 +19,8 @@
   <depend>sensor_msgs</depend>
   <depend>tf2_ros</depend>
 
+  <depend>std_srvs</depend>
+
   <depend>ros2_x_omni_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

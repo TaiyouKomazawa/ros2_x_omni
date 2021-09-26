@@ -27,6 +27,7 @@ find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(ros2_x_omni_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 add_executable(x_omni_node src/x_omni_node.cpp)
 
