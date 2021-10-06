@@ -136,7 +136,7 @@ class XOmniOdomNode(Node):
         self.mag_pub.publish(self.mag_msg)
 
     def imu_calibration(self, samples):
-        self.get_logger().warn('Calibrating the IMU. Please do not tilt for a while.')
+        self.get_logger().info('Calibrating the IMU. Please do not tilt for a while.')
         self.samples = samples
         self.calibration_cnt = 0
         self.offset_gyro_x = 0
