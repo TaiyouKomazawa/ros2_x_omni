@@ -23,6 +23,7 @@ class XOmniOdomNode(Node):
         super().__init__('x_odom_node')
 
         self.br = TransformBroadcaster(self)
+        self.odom_msg = Odometry()
         self.imu_msg = Imu()
         self.mag_msg = MagneticField()
         self.lasttime = self.get_clock().now()
@@ -32,6 +33,22 @@ class XOmniOdomNode(Node):
         self.pose_th = 0
 
         self.imu_calibration(500)
+
+        hz = 80
+        # (wheel circumference)/(encoder resolution)*(wheels)/(fz) [m/s]
+        ex = ey = np.sqrt(np.pi * 0.048 / 360 * 4 / hz)
+
+        # (wheel circumference)/(encoder resolution)/(wheel-origin circumference)*(wheels)*2*PI/(fz) [rad/s]
+        eth = np.sqrt((0.048 / 360) / 0.0978 * 4 * 2 * np.pi / hz)
+
+        self.odom_msg.twist.covariance = [
+            ex*ex,  ex*ey,  0.0, 0.0, 0.0,  ex*eth,
+            ex*ey,  ey*ey,  0.0, 0.0, 0.0,  ey*eth,
+            0.0,    0.0,    0.0, 0.0, 0.0,  0.0,
+            0.0,    0.0,    0.0, 0.0, 0.0,  0.0,
+            0.0,    0.0,    0.0, 0.0, 0.0,  0.0,
+            ex*eth, ey*eth, 0.0, 0.0, 0.0,  eth*eth
+        ]
 
         self.odom_sub = self.create_subscription(
             Twist,
@@ -87,31 +104,30 @@ class XOmniOdomNode(Node):
 
         self.lastmsg = msg
 
-        t_msg = Odometry()
         t = TransformStamped()
 
-        t_msg.header.stamp = t.header.stamp = self.get_clock().now().to_msg()
-        t_msg.header.frame_id = t.header.frame_id = "odom"
-        t_msg.child_frame_id = t.child_frame_id = "base_link"
+        self.odom_msg.header.stamp = t.header.stamp = self.get_clock().now().to_msg()
+        self.odom_msg.header.frame_id = t.header.frame_id = "odom"
+        self.odom_msg.child_frame_id = t.child_frame_id = "base_link"
 
-        t_msg.pose.pose.position.x = t.transform.translation.x = self.pose_x
-        t_msg.pose.pose.position.y = t.transform.translation.y = self.pose_y
-        t_msg.pose.pose.position.z = t.transform.translation.z = 0.0
+        self.odom_msg.pose.pose.position.x = t.transform.translation.x = self.pose_x
+        self.odom_msg.pose.pose.position.y = t.transform.translation.y = self.pose_y
+        self.odom_msg.pose.pose.position.z = t.transform.translation.z = 0.0
 
-        t_msg.pose.pose.orientation.x = t.transform.rotation.x = 0.0
-        t_msg.pose.pose.orientation.y = t.transform.rotation.y = 0.0
-        t_msg.pose.pose.orientation.z = t.transform.rotation.z = np.sin(self.pose_th/2)
-        t_msg.pose.pose.orientation.w = t.transform.rotation.w = np.cos(self.pose_th/2)
+        self.odom_msg.pose.pose.orientation.x = t.transform.rotation.x = 0.0
+        self.odom_msg.pose.pose.orientation.y = t.transform.rotation.y = 0.0
+        self.odom_msg.pose.pose.orientation.z = t.transform.rotation.z = np.sin(self.pose_th/2)
+        self.odom_msg.pose.pose.orientation.w = t.transform.rotation.w = np.cos(self.pose_th/2)
 
-        t_msg.twist.twist.linear.x = msg.linear.x
-        t_msg.twist.twist.linear.y = msg.linear.y
-        t_msg.twist.twist.linear.z = 0.0
+        self.odom_msg.twist.twist.linear.x = msg.linear.x
+        self.odom_msg.twist.twist.linear.y = msg.linear.y
+        self.odom_msg.twist.twist.linear.z = 0.0
 
-        t_msg.twist.twist.angular.x = 0.0
-        t_msg.twist.twist.angular.y = 0.0
-        t_msg.twist.twist.angular.z = msg.angular.z
+        self.odom_msg.twist.twist.angular.x = 0.0
+        self.odom_msg.twist.twist.angular.y = 0.0
+        self.odom_msg.twist.twist.angular.z = msg.angular.z
 
-        self.odom_pub.publish(t_msg)
+        self.odom_pub.publish(self.odom_msg)
         self.br.sendTransform(t)
 
     def got_imu_callback(self, msg):
