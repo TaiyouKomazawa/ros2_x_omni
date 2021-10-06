@@ -37,7 +37,7 @@ public:
 
     this->_get_cmd = false;
 
-    odom_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("x_omni/odom_vel/raw", 10);
+    odom_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("x_omni/odom_vel", 10);
     imu_pub_ = this->create_publisher<ros2_x_omni_msgs::msg::ImuAxis9>("x_omni/imu/raw", 10);
     subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&XOmniNode::topic_callback, this, _1));
