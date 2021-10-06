@@ -35,7 +35,7 @@ class XOmniOdomNode(Node):
 
         self.odom_sub = self.create_subscription(
             Twist,
-            'x_omni/odom_vel/raw',
+            'x_omni/odom_vel',
             self.got_odom_callback,
             10)
         self.odom_sub  # prevent unused variable warning
@@ -47,7 +47,7 @@ class XOmniOdomNode(Node):
         self.imu_sub
         self.odom_pub = self.create_publisher(
             Odometry,
-            'x_omni/odom_vel',
+            'x_omni/odometry',
             5)
         self.imu_pub = self.create_publisher(
             Imu,
